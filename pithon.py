@@ -10,8 +10,9 @@ sys.setdefaultencoding('utf-8')
 import csv
 
 from multiprocessing import Pool
+
 urls = [
-	'https://cs7.pikabu.ru/post_img/2017/11/14/3/1510631664167520623.jpg'
+	'https://cs7.pikabu.ru/post_img/2017/11/14/3/1510631664167520623.jpg',
 	'https://cs8.pikabu.ru/post_img/2017/11/14/4/1510637913128867791.jpg'
 ]
 
@@ -78,7 +79,10 @@ def write_csv(data):
 def make_all(url):
 	html = get_html(url)
 	data = get_page_data(html)
-	# write_csv(data)
+	write_csv(data)
+
+
+#pic
 
 def get_file(url):
 	r = requests.get(url, stream=True)
@@ -97,8 +101,18 @@ def main():
 	for url in urls:
 		save_image(get_name(url),get_file(url))
 
-	url = 'http://optimus-cctv.ru/catalog/'
-	all_catalog = get_all_catalog(get_html(url))
+	url = 'http://optimus-cctv.ru/catalog/'	
+	all_catalog = get_all_catalog(get_html(url))	
+	ls = all_catalog['links']
+	
+	for l in ls:
+		all_links = get_all_links( get_html(l) )
+		# print(all_links)
+		p = Pool(400)
+		p.map(make_all, all_links)
+	# url = 'http://optimus-cctv.ru/catalog/'
+	# all_catalog = get_all_catalog(get_html(url))
+
 	# i = 1
 	# while i <= len(all_catalog['links']):
 	# 		y = all_catalog['links'][i]
