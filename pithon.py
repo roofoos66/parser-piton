@@ -2,6 +2,7 @@ import requests
 
 from bs4 import BeautifulSoup
 
+import os
 
 import sys
 reload(sys)
@@ -11,6 +12,10 @@ import csv
 
 from multiprocessing import Pool
 
+# urls = [
+# 	'https://cs7.pikabu.ru/post_img/2017/11/14/3/1510631664167520623.jpg',
+# 	'https://cs8.pikabu.ru/post_img/2017/11/14/4/1510637913128867791.jpg'
+# ]
 
 def get_html(url):
 	r = requests.get(url)
@@ -59,8 +64,12 @@ def get_page_data(html):
 	except:
 		opis = ''
 
-	data = {'name': name,
-		    'opis': opis}
+	try:
+		url = soup.find('div', class_='cat_image').find('img').get('src')
+	except:
+		url = ''	
+
+	data = {'name': name,'opis': opis,'url': url}
 
 	return data			
 
@@ -68,44 +77,49 @@ def write_csv(data):
 	with open('csv.csv', 'a') as f:
 		writer = csv.writer(f)
 
-		writer.writerow( (data['name'],data['opis']) )
+		writer.writerow( (data['name'],data['opis'],data['url']) )
+		print(data['name'],['opis'],['url'],'parsed')
 
-		print(data['name'],['opis'],'parsed')
+def write_pic(data):
+	url = data['url']
+	save_image(get_name(url),get_file(url))
 
-def make_all(url):
-	html = get_html(url)
-	data = get_page_data(html)
-	write_csv(data)
-	
+
+		# print(data['name'],['opis'],['url'],'parsed')
+		#pic
+
+def get_file(url):
+	r = requests.get(url, stream=True)
+	return r
+
+def get_name(url):
+	name = url.split('/')[-1]
+
+	folder = 'pic'.split('.')[0]
+
+	if not os.path.exists(folder):
+		os.makedirs(folder)
+
+	path = os.path.abspath(folder)
+
+	return path + '/' + name   		
+
+def save_image(name, file_object):
+	with open(name, 'w') as f:
+		for chunk in file_object.iter_content(8192):
+			f.write(chunk)
 
 def main():
-	url = 'http://optimus-cctv.ru/catalog/'
-	all_catalog = get_all_catalog(get_html(url))
-	i = 1
-	while i <= len(all_catalog['links']):
-			y = all_catalog['links'][i]
-			all_links = get_all_links( get_html(y) )
-			print(y)
-			p = Pool(40)
-			p.map(make_all, all_links)
-			i += 1
+	url = 'http://optimus-cctv.ru/catalog/'	
+	all_catalog = get_all_catalog(get_html(url))	
+	for l in all_catalog['links']:
+		all_links = get_all_links( get_html(l) )
+		for url in all_links:
+			html = get_html(url)
+			data = get_page_data(html)
+			# write_csv(data)
+			write_pic(data)	
 
 	
-	# print('\n'.join(all_catalog['links']))
-
-	# all_links = get_all_links( get_html(y) )
-	# print(all_links)
-	# for index, url in enumerate(all_links):
-	# 	html = get_html(url)
-	# 	data = get_page_data(html)
-	# 	write_csv(data)
-	# 	# print(url)
-	# 	print(index)
-
-	# p = Pool(40)
-	# p.map(make_all, all_links)
-	# p.map(make_all, all_catalog)
-
-
 if __name__ == '__main__':
 	main()
