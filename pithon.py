@@ -10,7 +10,10 @@ sys.setdefaultencoding('utf-8')
 import csv
 
 from multiprocessing import Pool
-
+urls = [
+	'https://cs7.pikabu.ru/post_img/2017/11/14/3/1510631664167520623.jpg'
+	'https://cs8.pikabu.ru/post_img/2017/11/14/4/1510637913128867791.jpg'
+]
 
 def get_html(url):
 	r = requests.get(url)
@@ -75,20 +78,35 @@ def write_csv(data):
 def make_all(url):
 	html = get_html(url)
 	data = get_page_data(html)
-	write_csv(data)
-	
+	# write_csv(data)
+
+def get_file(url):
+	r = requests.get(url, stream=True)
+	return r
+
+def get_name(url):
+	name = url.split('/')[-1]
+	return name   		
+
+def save_image(name, file_object):
+	with open(name, 'w') as f:
+		for chunk in file_object.iter_content(8192):
+			f.write(chunk)
 
 def main():
+	for url in urls:
+		save_image(get_name(url),get_file(url))
+
 	url = 'http://optimus-cctv.ru/catalog/'
 	all_catalog = get_all_catalog(get_html(url))
-	i = 1
-	while i <= len(all_catalog['links']):
-			y = all_catalog['links'][i]
-			all_links = get_all_links( get_html(y) )
-			print(y)
-			p = Pool(40)
-			p.map(make_all, all_links)
-			i += 1
+	# i = 1
+	# while i <= len(all_catalog['links']):
+	# 		y = all_catalog['links'][i]
+	# 		all_links = get_all_links( get_html(y) )
+	# 		print(y)
+	# 		p = Pool(40)
+	# 		p.map(make_all, all_links)
+	# 		i += 1
 
 	
 	# print('\n'.join(all_catalog['links']))
