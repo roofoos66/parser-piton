@@ -103,41 +103,11 @@ def main():
 
 	url = 'http://optimus-cctv.ru/catalog/'	
 	all_catalog = get_all_catalog(get_html(url))	
-	ls = all_catalog['links']
 	
-	for l in ls:
+	for l in all_catalog['links']:
 		all_links = get_all_links( get_html(l) )
-		# print(all_links)
-		p = Pool(400)
+		p = Pool(2)
 		p.map(make_all, all_links)
-	# url = 'http://optimus-cctv.ru/catalog/'
-	# all_catalog = get_all_catalog(get_html(url))
-
-	# i = 1
-	# while i <= len(all_catalog['links']):
-	# 		y = all_catalog['links'][i]
-	# 		all_links = get_all_links( get_html(y) )
-	# 		print(y)
-	# 		p = Pool(40)
-	# 		p.map(make_all, all_links)
-	# 		i += 1
-
-	
-	# print('\n'.join(all_catalog['links']))
-
-	# all_links = get_all_links( get_html(y) )
-	# print(all_links)
-	# for index, url in enumerate(all_links):
-	# 	html = get_html(url)
-	# 	data = get_page_data(html)
-	# 	write_csv(data)
-	# 	# print(url)
-	# 	print(index)
-
-	# p = Pool(40)
-	# p.map(make_all, all_links)
-	# p.map(make_all, all_catalog)
-
 
 if __name__ == '__main__':
 	main()
