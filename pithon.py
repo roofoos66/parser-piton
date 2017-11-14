@@ -80,10 +80,7 @@ def make_all(url):
 
 def main():
 	url = 'http://optimus-cctv.ru/catalog/'
-	url2 = 'http://optimus-cctv.ru/catalog/ahd-videoregistratory'
-
 	all_catalog = get_all_catalog(get_html(url))
-	# print(all_catalog)
 	i = 1
 	while i <= len(all_catalog['links']):
 			y = all_catalog['links'][i]
@@ -111,5 +108,4 @@ def main():
 
 
 if __name__ == '__main__':
-
 	main()
