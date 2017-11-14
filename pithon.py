@@ -11,6 +11,7 @@ import csv
 
 from multiprocessing import Pool
 
+
 def get_html(url):
 	r = requests.get(url)
 	return r.text
@@ -27,7 +28,23 @@ def get_all_links(html):
 		link = 'http://optimus-cctv.ru' + a
 		links.append(link)
 
+		
 	return links	
+
+def get_all_catalog(html):
+	soup = BeautifulSoup(html, 'lxml')
+
+	cat = soup.find('table', class_='jshop').find_all('td', class_='')
+
+	cat_links = []
+
+	for td in cat:
+		a = td.find('a').get('href')
+		link = 'http://optimus-cctv.ru' + a
+		cat_links.append(link)
+
+		data = {'links': cat_links}
+	return data
 
 def get_page_data(html):
 	soup = BeautifulSoup(html, 'lxml')
@@ -48,7 +65,7 @@ def get_page_data(html):
 	return data			
 
 def write_csv(data):
-	with open('csv3.csv', 'a') as f:
+	with open('csv.csv', 'a') as f:
 		writer = csv.writer(f)
 
 		writer.writerow( (data['name'],data['opis']) )
@@ -59,14 +76,28 @@ def make_all(url):
 	html = get_html(url)
 	data = get_page_data(html)
 	write_csv(data)
-
+	
 
 def main():
+	url = 'http://optimus-cctv.ru/catalog/'
+	url2 = 'http://optimus-cctv.ru/catalog/ahd-videoregistratory'
 
-	url = 'http://optimus-cctv.ru/catalog/ip-videokamery'
+	all_catalog = get_all_catalog(get_html(url))
+	# print(all_catalog)
+	i = 1
+	while i <= len(all_catalog['links']):
+			y = all_catalog['links'][i]
+			all_links = get_all_links( get_html(y) )
+			print(y)
+			p = Pool(40)
+			p.map(make_all, all_links)
+			i += 1
 
-	all_links = get_all_links( get_html(url) )
+	
+	# print('\n'.join(all_catalog['links']))
 
+	# all_links = get_all_links( get_html(y) )
+	# print(all_links)
 	# for index, url in enumerate(all_links):
 	# 	html = get_html(url)
 	# 	data = get_page_data(html)
@@ -74,8 +105,9 @@ def main():
 	# 	# print(url)
 	# 	print(index)
 
-	p = Pool(40)
-	p.map(make_all, all_links)
+	# p = Pool(40)
+	# p.map(make_all, all_links)
+	# p.map(make_all, all_catalog)
 
 
 if __name__ == '__main__':
